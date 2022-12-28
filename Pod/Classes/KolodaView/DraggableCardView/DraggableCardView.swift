@@ -9,10 +9,10 @@
 import UIKit
 import pop
 
-public enum DragSpeed: TimeInterval {
+public enum DragSpeed: Double, Codable {
     case ultraSlow = 2.0
     case slow = 1.5
-    case `default` = 1
+    case `default` = 1.0
     case fast = 0.5
     case ultraFast = 0.25
 }
