@@ -10,10 +10,11 @@ import UIKit
 import pop
 
 public enum DragSpeed: TimeInterval {
-    case slow = 2.0
-    case moderate = 1.5
-    case `default` = 0.8
-    case fast = 0.4
+    case ultraSlow = 2.0
+    case slow = 1.5
+    case `default` = 1
+    case fast = 0.5
+    case ultraFast = 0.25
 }
 
 protocol DraggableCardDelegate: AnyObject {
