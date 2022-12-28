@@ -8,14 +8,15 @@
 
 import UIKit
 
-public enum DragSpeed: TimeInterval {
-    case slow = 2.0
-    case moderate = 1.5
-    case `default` = 0.8
-    case fast = 0.4
+public enum DragSpeed: Double, Codable {
+    case ultraSlow = 2.0
+    case slow = 1.5
+    case `default` = 1.0
+    case fast = 0.5
+    case ultraFast = 0.25
 }
 
-protocol DraggableCardDelegate: class {
+protocol DraggableCardDelegate: AnyObject {
     
     func card(_ card: DraggableCardView, wasDraggedWithFinishPercentage percentage: CGFloat, inDirection direction: SwipeResultDirection)
     func card(_ card: DraggableCardView, wasSwipedIn direction: SwipeResultDirection)
