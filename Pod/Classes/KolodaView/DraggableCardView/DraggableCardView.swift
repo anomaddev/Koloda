@@ -9,13 +9,13 @@
 import UIKit
 
 public enum DragSpeed: Double, Codable {
-    case ultraSlow = 2.0
+    case ultraSlow = 1.66
     case slow = 1.5
     case kindaSlow = 1.25
     case `default` = 1.0
-    case kindaFast = 0.5
-    case fast = 0.33
-    case ultraFast = 0.25
+    case kindaFast = 0.75
+    case fast = 0.5
+    case ultraFast = 0.33
 }
 
 protocol DraggableCardDelegate: AnyObject {
