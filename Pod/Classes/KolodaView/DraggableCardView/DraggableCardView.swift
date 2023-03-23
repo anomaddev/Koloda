@@ -8,7 +8,7 @@
 
 import UIKit
 
-public enum DragSpeed: Double, Codable {
+public enum DragSpeed: Double, Codable, CaseIterable {
     case ultraSlow = 1.66
     case slow = 1.5
     case kindaSlow = 1.25
