@@ -22,7 +22,11 @@ public enum DragSpeed: Double, Codable, CaseIterable {
         case .ultraSlow: return "Ultra Slow"   
         case .slow: return "Slow"
         case .kindaSlow: return "Kinda Slow"
+<<<<<<< HEAD
         case .`default`: return "Normal"
+=======
+        case .default: return "Normal"
+>>>>>>> 1ef07cb3d202d5cc52a7e741c3e77caeb7fd723c
         case .kindaFast: return "Kinda Fast"
         case .fast: return "Fast"
         case .ultraFast: return "Ultra Fast"
