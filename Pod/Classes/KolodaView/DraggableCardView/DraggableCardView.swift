@@ -17,9 +17,9 @@ public enum DragSpeed: Double, Codable, CaseIterable {
     case fast = 0.5
     case ultraFast = 0.33
     
-    var label: String { 
+    public var label: String {
         switch self { 
-        case .ultraSlow:    return "Ultra Slow"   
+        case .ultraSlow:    return "Ultra Slow"
         case .slow:         return "Slow"
         case .kindaSlow:    return "Kinda Slow"
         case .`default`:    return "Normal"
