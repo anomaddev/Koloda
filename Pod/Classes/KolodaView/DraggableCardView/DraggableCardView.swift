@@ -16,6 +16,18 @@ public enum DragSpeed: Double, Codable, CaseIterable {
     case kindaFast = 0.75
     case fast = 0.5
     case ultraFast = 0.33
+    
+    var label: String { 
+        switch self { 
+        case .ultraSlow: return "Ultra Slow"   
+        case .slow: return "Slow"
+        case .kindaSlow: return "Kinda Slow"
+        case .default: return "Normal"
+        case .kindaFast: return "Kinda Fast"
+        case .fast: return "Fast"
+        case .ultraFast: return "Ultra Fast"
+        }
+    }
 }
 
 protocol DraggableCardDelegate: AnyObject {
