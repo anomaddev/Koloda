@@ -620,13 +620,18 @@ open class KolodaView: UIView, DraggableCardDelegate {
         }
     }
     
-    public func swipe(_ direction: SwipeResultDirection, force: Bool = false) {
+    public func swipe(
+        _ direction: SwipeResultDirection,
+        force: Bool = false,
+        completionHandler: @escaping () -> Void
+    ) {
         let shouldSwipe = delegate?.koloda(self, shouldSwipeCardAt: currentCardIndex, in: direction) ?? true
         guard force || shouldSwipe else { return }
         
         let validDirection = delegate?.koloda(self, allowedDirectionsForIndex: currentCardIndex).contains(direction) ?? true
         guard validDirection else { return }
         
+        print("card swipe view currently animating: \(animationSemaphore.isAnimating)")
         if !animationSemaphore.isAnimating {
             if let frontCard = visibleCards.first, !frontCard.dragBegin {
                 
@@ -639,6 +644,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
                 
                 frontCard.swipe(direction) {
                     self.animationSemaphore.decrement()
+                    completionHandler()
                 }
                 frontCard.delegate = nil
             }
