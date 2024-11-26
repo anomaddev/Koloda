@@ -623,7 +623,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
     public func swipe(
         _ direction: SwipeResultDirection,
         force: Bool = false,
-        completionHandler: @escaping () -> Void
+        completionHandler: (() -> Void)? = nil
     ) {
         let shouldSwipe = delegate?.koloda(self, shouldSwipeCardAt: currentCardIndex, in: direction) ?? true
         guard force || shouldSwipe else { return }
@@ -644,7 +644,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
                 
                 frontCard.swipe(direction) {
                     self.animationSemaphore.decrement()
-                    completionHandler()
+                    completionHandler?()
                 }
                 frontCard.delegate = nil
             }
