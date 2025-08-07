@@ -19,12 +19,12 @@ class KolodaAnimationSemaphore {
     }
     
     public func increment() {
-        print("koloda did increment")
+//        print("koloda did increment")
         animating += 1
     }
     
     public func decrement() {
-        print("koloda did decrement")
+//        print("koloda did decrement")
         animating  -= 1
         if animating < 0 {
             animating = 0
