@@ -151,6 +151,14 @@ open class KolodaView: UIView, DraggableCardDelegate {
         return KolodaViewAnimator(koloda: self)
     }()
     private var visibleCards = [DraggableCardView]()
+    
+    // Queue for pending programmatic swipes
+    private struct QueuedSwipe {
+        let direction: SwipeResultDirection
+        let force: Bool
+        let completionHandler: (() -> Void)?
+    }
+    private var swipeQueue: [QueuedSwipe] = []
 
     private var cardIsDragging: Bool {
         guard let frontCard = visibleCards.first else {
@@ -358,9 +366,11 @@ open class KolodaView: UIView, DraggableCardDelegate {
                         card.alpha = index == 0 ? _self.alphaValueOpaque : _self.alphaValueSemiTransparent
                     }
                 }
+                _self.processSwipeQueue()
             }
         } else {
             animationSemaphore.decrement()
+            processSwipeQueue()
         }
         
         delegate?.kolodaDidResetCard(self)
@@ -434,11 +444,13 @@ open class KolodaView: UIView, DraggableCardDelegate {
                 _self.animationSemaphore.decrement()
                 _self.delegate?.koloda(_self, didSwipeCardAt: swipedCardIndex, in: direction)
                 _self.delegate?.koloda(_self, didShowCardAt: _self.currentCardIndex)
+                _self.processSwipeQueue()
             }
         } else {
             animationSemaphore.decrement()
             delegate?.koloda(self, didSwipeCardAt: swipedCardIndex, in: direction)
             delegate?.kolodaDidRunOutOfCards(self)
+            processSwipeQueue()
         }
     }
     
@@ -534,6 +546,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
                 _self.delegate?.koloda(_self, didRewindTo: _self.currentCardIndex)
                 _self.delegate?.koloda(_self, didShowCardAt: _self.currentCardIndex)
                 completion?()
+                _self.processSwipeQueue()
             })
         }
         
@@ -632,24 +645,67 @@ open class KolodaView: UIView, DraggableCardDelegate {
         let validDirection = delegate?.koloda(self, allowedDirectionsForIndex: currentCardIndex).contains(direction) ?? true
         guard validDirection else { return }
         
-//        print("card swipe view currently animating: \(animationSemaphore.isAnimating)")
-        if !animationSemaphore.isAnimating {
-            if let frontCard = visibleCards.first, !frontCard.dragBegin {
-                
-                if visibleCards.count > 1 {
-                    let nextCard = visibleCards[1]
-                    nextCard.alpha = shouldTransparentizeNextCard ? alphaValueSemiTransparent : alphaValueOpaque
-                }
-                
-                animationSemaphore.increment()
-                
-                frontCard.swipe(direction) {
-                    self.animationSemaphore.decrement()
-                    completionHandler?()
-                }
-                frontCard.delegate = nil
-            }
+        // If currently animating, enqueue the swipe request
+        if animationSemaphore.isAnimating {
+            swipeQueue.append(QueuedSwipe(direction: direction, force: force, completionHandler: completionHandler))
+            return
         }
+        
+        // Process swipe immediately if not animating
+        performSwipe(direction: direction, force: force, completionHandler: completionHandler)
+    }
+    
+    private func performSwipe(
+        direction: SwipeResultDirection,
+        force: Bool,
+        completionHandler: (() -> Void)?
+    ) {
+        guard let frontCard = visibleCards.first, !frontCard.dragBegin else {
+            return
+        }
+        
+        if visibleCards.count > 1 {
+            let nextCard = visibleCards[1]
+            nextCard.alpha = shouldTransparentizeNextCard ? alphaValueSemiTransparent : alphaValueOpaque
+        }
+        
+        animationSemaphore.increment()
+        
+        frontCard.swipe(direction) { [weak self] in
+            guard let self = self else { return }
+            self.animationSemaphore.decrement()
+            completionHandler?()
+            
+            // Process next queued swipe if available
+            self.processSwipeQueue()
+        }
+        frontCard.delegate = nil
+    }
+    
+    private func processSwipeQueue() {
+        // Only process queue when not animating and no card is being dragged
+        guard !animationSemaphore.isAnimating, !cardIsDragging, !swipeQueue.isEmpty else {
+            return
+        }
+        
+        let queuedSwipe = swipeQueue.removeFirst()
+        
+        // Re-validate the swipe request
+        let shouldSwipe = delegate?.koloda(self, shouldSwipeCardAt: currentCardIndex, in: queuedSwipe.direction) ?? true
+        guard queuedSwipe.force || shouldSwipe else {
+            // Skip invalid swipe and process next in queue
+            processSwipeQueue()
+            return
+        }
+        
+        let validDirection = delegate?.koloda(self, allowedDirectionsForIndex: currentCardIndex).contains(queuedSwipe.direction) ?? true
+        guard validDirection else {
+            // Skip invalid direction and process next in queue
+            processSwipeQueue()
+            return
+        }
+        
+        performSwipe(direction: queuedSwipe.direction, force: queuedSwipe.force, completionHandler: queuedSwipe.completionHandler)
     }
     
     public func resetCurrentCardIndex() {
